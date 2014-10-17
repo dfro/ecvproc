@@ -1,0 +1,109 @@
+# -*- coding: utf-8 -*-
+
+import numpy as np
+import linecache
+import math
+
+#Constants
+eps0 = 8.854187817e-14 #F*cm^-1
+q = 1.602176462e-19 #C
+
+def cv_read(cv_file, model):
+    """ Read Capacitance-Voltage data from *.CV file
+    
+    Parameters
+    ----------
+    cv_file : srt, path to the CV file
+    model : str, 'Cp' or 'Cs' - model for calculation capacitance
+    
+    Returns
+    -------
+    Cp, Cs : float, capacitance in uF/cm^2
+    voltage : float, voltage in V
+    
+    """
+    
+    #get area, size and frequency from line 12 of CV file
+    #example: 0 0.106 2327.1 443.02 0
+    #(?) (area) (first frequency in rad) (second freq) (?)
+    cv_properties = linecache.getline(cv_file, 12)
+    cv_properties = cv_properties.split()
+    area = float(cv_properties[1])
+    freq = float(cv_properties[2])
+
+    #build voltage array from values in line 15
+    #example: -0.64142 0.008 19 100
+    #(start voltage) (step) (number of negative steps) (total number of steps)
+    voltage_range = linecache.getline(cv_file, 15)
+    voltage_range = voltage_range.split()
+    vstart = float(voltage_range[0])
+    vstep = float(voltage_range[1])
+    nneg = float(voltage_range[2])
+    npos = float(voltage_range[3]) - nneg
+    voltage = np.concatenate((
+                              np.linspace(vstart, vstart-vstep*nneg, nneg+1),
+                              np.linspace(vstart, vstart+vstep*npos, npos,
+                                          endpoint=False)
+                              ),
+                             axis = 0)
+
+    # Y is complex admittance (Gp+Bp*i)
+    cnv = dict.fromkeys([0], lambda x: complex(*eval(x)))
+    Y = np.genfromtxt(cv_file, converters=cnv, 
+                      delimiter=25, skip_header=15)
+    #sort array
+    array = np.vstack((voltage, Y.real, Y.imag)).T
+    array = array[array[:,0].argsort(0)]
+    voltage = array[:,0]
+    Y.real = array[:,1]
+    Y.imag = array[:,2]
+
+    Diss = Y.real/Y.imag
+    Cp = 1e6*Y.imag/(freq*area)
+    Cs = Cp*(1+Diss**2)
+
+    if model == 'Cp':
+        return Cp, voltage
+    if model == 'Cs':
+        return Cs, voltage
+ 
+def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
+    """ Returns linear fit for measured 1/C^2 and calculated Doping level 
+    
+    Parameters
+    ----------
+    capacitance : float, capacitance in uF/cm^2
+    voltage : float, voltage in V
+    vmin, vmax : float, range for linear fitting
+    eps : float, dielectric constant (default is for InAs)
+    
+    Returns
+    -------
+    cap_fit: float, 1/C^2 in cm^4/uF^2
+    doping: float, calculated doping level in cm^-3
+    
+    """
+   
+    if not vmin: vmin=min(voltage)
+    if not vmax: vmax=max(voltage)
+    volt_in_rage, cap_in_rage = [],[]
+    for i in range(voltage.size):
+        if voltage[i] >=vmin and voltage[i] <=vmax:
+            volt_in_rage.append(voltage[i])
+            cap_in_rage.append(capacitance[i])
+     
+            
+    volt_in_rage = np.asarray(volt_in_rage)
+    cap_in_rage = np.asarray(cap_in_rage)
+    coeff = np.polyfit(volt_in_rage, 1/cap_in_rage**2, 1)
+    
+    # volt_fit contain two point
+    # first 1/C^2-->0, second is based on maximum capacitance
+    volt_fit = [-coeff[1]/coeff[0], 
+               (math.ceil(1.1*max(1/capacitance**2))-coeff[1])/coeff[0]
+               ]
+    cap_fit = np.polyval(coeff, volt_fit)
+
+    #doping calculation
+    doping = 1e-12*2/(coeff[0]*q*eps*eps0) #cm^-3
+    return cap_fit, volt_fit, doping
