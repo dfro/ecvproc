@@ -1,11 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(name='ecvproc',
       version='0.1.0',
-      description='ECVPro output file process'
-      long_description=read(README.md)
-      author='Dmitry Folov'
-      license='MIT'
-      packages=find_packages
+      description='ECVPro output file process',
+      author='Dmitry Folov',
+      license='MIT',
+      packages=['ecvproc']
       )
       
