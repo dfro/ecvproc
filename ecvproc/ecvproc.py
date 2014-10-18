@@ -118,13 +118,13 @@ def ep_read(ep_file):
     Returns
     -------
     doping : float, doping level in cm^-3
-    width : float, depletion width + etched with in um
+    depth : float, depletion width + etched width in um
     
     """
-    data=np.genfromtxt(ep_file, skip_header=13, names=['width', 'doping'])
+    data=np.genfromtxt(ep_file, skip_header=13, names=['depth', 'doping'])
     
     doping=data['doping']
-    width=data['width']
+    depth=data['depth']
     
     return doping, width
         
