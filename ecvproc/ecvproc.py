@@ -107,6 +107,26 @@ def iv_read(iv_file):
     current = array[:,1]
 
     return current, voltage
+
+def ep_read(ep_file):
+    """ Read measured doping profile from *.EP file
+    
+    Parameters
+    ----------
+    ep_file : srt, path to the EP file
+
+    Returns
+    -------
+    doping : float, doping level in cm^-3
+    width : float, depletion width + etched with in um
+    
+    """
+    data=np.genfromtxt(ep_file, skip_header=13, names=['width', 'doping'])
+    
+    doping=data['doping']
+    width=data['width']
+    
+    return doping, width
         
 def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     """ Returns linear fit for measured 1/C^2 and calculated Doping level 
