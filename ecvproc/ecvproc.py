@@ -66,7 +66,48 @@ def cv_read(cv_file, model):
         return Cp, voltage
     if model == 'Cs':
         return Cs, voltage
- 
+
+def iv_read(iv_file):
+    """ Read Current-Voltage data from *.IV file
+    
+    Parameters
+    ----------
+    cv_file : srt, path to the IV file
+    
+    Returns
+    -------
+    current : float, current in mA/cm^2
+    voltage : float, voltage in V
+    
+    """
+    
+    #build voltage array from values in line 15
+    #example: -0.64142 0.008 19 100
+    #(start voltage) (step) (number of negative steps) (total number of steps)
+    voltage_range = linecache.getline(iv_file, 15)
+    voltage_range = voltage_range.split()
+    vstart = float(voltage_range[0])
+    vstep = float(voltage_range[1])
+    nneg = float(voltage_range[2])
+    npos = float(voltage_range[3]) - nneg
+    voltage = np.concatenate((
+                              np.linspace(vstart, vstart-vstep*nneg, nneg+1),
+                              np.linspace(vstart, vstart+vstep*npos, npos,
+                                          endpoint=False)
+                              ),
+                             axis = 0)
+
+    # read current 
+    current = np.genfromtxt(iv_file, skip_header=15)
+    
+    #sort array
+    array = np.vstack((voltage, current)).T
+    array = array[array[:,0].argsort(0)]
+    voltage = array[:,0]
+    current = array[:,1]
+
+    return current, voltage
+        
 def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     """ Returns linear fit for measured 1/C^2 and calculated Doping level 
     
