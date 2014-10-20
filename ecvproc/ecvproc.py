@@ -137,7 +137,7 @@ def log_read(log_file, *field_name):
     field_name : tuple of str, name of field from the list
         list=('No', 'Lmp', 'MC', 'V-etch', 'I-etch', 
               'V-meas', 'I-meas', 'Dis', 'FBP', 'Wr',
-              'Wd', 'X', 'N')
+              'Wd', 'X', 'N', 'F1', 'F2', 'Amp', 'dV')
     
     Returns
     -------
@@ -148,8 +148,8 @@ def log_read(log_file, *field_name):
     dtype=np.dtype([('No', '>i4'), ('Lmp', '>i4'), ('MC', '|S8'), 
            ('V-etch', '>f4'), ('I-etch', '>f4'), ('V-meas', '>f4'),
            ('I-meas', '>f4'), ('Dis', '>f4'), ('FBP', '>f4'), 
-           ('Wr', '>f4'), ('Wd', '>f4'), ('X', '>f4'), 
-           ('N', '>f4')])
+           ('Wr', '>f4'), ('Wd', '>f4'), ('X', '>f4'), ('N', '>f4'), 
+           ('F1', '>f4'), ('F2', '>f4'), ('Amp', '>f4'), ('dV', '>f4')])
             
     f=open(log_file, 'r')
     exclude=['Spot', 'Value','Freq.', 'Dis.', 'C', 'G','Rs', 
@@ -164,7 +164,10 @@ def log_read(log_file, *field_name):
         if not [s for s in line.split() if s in exclude] \
         and not line.split()==[]:
             if not 'F1=' in line:
-                data.append(tuple(line.split()))
+                data.append(tuple(line.split())+
+                            (mp['F1'], mp['F2'], mp['Amp'], mp['dV']))
+            else:
+                mp=dict(s.split('=') for s in line.split(', '))
             
     data = np.vstack(np.array(data, dtype=dtype))
     
