@@ -13,7 +13,7 @@ def cv_read(cv_file, model):
     
     Parameters
     ----------
-    cv_file : srt, path to the CV file
+    cv_file : str, path to the CV file
     model : str, 'Cp' or 'Cs' - model for calculation capacitance
     
     Returns
@@ -72,7 +72,7 @@ def iv_read(iv_file):
     
     Parameters
     ----------
-    cv_file : srt, path to the IV file
+    cv_file : str, path to the IV file
     
     Returns
     -------
@@ -113,7 +113,7 @@ def ep_read(ep_file):
     
     Parameters
     ----------
-    ep_file : srt, path to the EP file
+    ep_file : str, path to the EP file
 
     Returns
     -------
@@ -127,6 +127,50 @@ def ep_read(ep_file):
     depth=data['depth']
     
     return doping, width
+	
+def log_read(log_file, first, second):
+    """ Read data from ecv log file
+    
+    Parameters
+    ----------
+    lof_file : str, path to log file
+    first : str, first parameter in list
+    second : str, second parameter in list
+        list=('No', 'Lmp', 'MC', 'V-etch', 'I-etch', 
+              'V-meas', 'I-meas', 'Dis', 'FBP', 'Wr',
+              'Wd', 'X', 'N')
+    
+    Returns
+    -------
+    first : float, array for first parameter
+    second : float, array for second parameter
+    
+    """
+
+    dtype=np.dtype([('No', '>i4'), ('Lmp', '>i4'), ('MC', '|S8'), 
+           ('V-etch', '>f4'), ('I-etch', '>f4'), ('V-meas', '>f4'),
+           ('I-meas', '>f4'), ('Dis', '>f4'), ('FBP', '>f4'), 
+           ('Wr', '>f4'), ('Wd', '>f4'), ('X', '>f4'), 
+           ('N', '>f4')])
+            
+    f=open(log_file, 'r')
+    exclude=['Spot', 'Value','Freq.', 'Dis.', 'C', 'G','Rs', 
+             'dC/dV', 'FBP', 'Depl.', 'N', 'No.', 'ECVpro',
+             'ID:', 'Description:', 'Saved', 'Spot:', 'Etch',
+             'Ring:', 'Recipe:', 'Electrolyte:', 'Pot:', 
+             'Contact', 'ECVision']
+
+    data=[]
+    
+    for line in f:
+        if not [s for s in line.split() if s in exclude] \
+        and not line.split()==[]:
+            if not 'F1=' in line:
+                data.append(tuple(line.split()))
+            
+    data = np.vstack(np.array(data, dtype=dtype))
+    
+    return data[first], data[second]
         
 def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     """ Returns linear fit for measured 1/C^2 and calculated Doping level 
