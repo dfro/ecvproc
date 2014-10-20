@@ -128,23 +128,21 @@ def ep_read(ep_file):
     
     return doping, width
 	
-def log_read(log_file, first, second):
+def log_read(log_file, *field_name):
     """ Read data from ecv log file
     
     Parameters
     ----------
-    lof_file : str, path to log file
-    first : str, first parameter in list
-    second : str, second parameter in list
+    log_file : str, path to log file
+    field_name : tuple of str, name of field from the list
         list=('No', 'Lmp', 'MC', 'V-etch', 'I-etch', 
               'V-meas', 'I-meas', 'Dis', 'FBP', 'Wr',
               'Wd', 'X', 'N')
     
     Returns
     -------
-    first : float, array for first parameter
-    second : float, array for second parameter
-    
+    data : tuple of nparrays
+   
     """
 
     dtype=np.dtype([('No', '>i4'), ('Lmp', '>i4'), ('MC', '|S8'), 
@@ -170,7 +168,7 @@ def log_read(log_file, first, second):
             
     data = np.vstack(np.array(data, dtype=dtype))
     
-    return data[first], data[second]
+    return tuple(data[i] for i in field_name)
         
 def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     """ Returns linear fit for measured 1/C^2 and calculated Doping level 
