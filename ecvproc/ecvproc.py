@@ -126,7 +126,7 @@ def ep_read(ep_file):
     doping=data['doping']
     depth=data['depth']
     
-    return doping, width
+    return doping, depth
 	
 def log_read(log_file, *field_name):
     """ Read data from ecv log file
@@ -205,8 +205,10 @@ def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     
     # volt_fit contain two point
     # first 1/C^2-->0, second is based on maximum capacitance
+    b = 1.1*max(1/capacitance**2)
+    k = 10**round(math.log10(b))
     volt_fit = [-coeff[1]/coeff[0], 
-               (math.ceil(1.1*max(1/capacitance**2))-coeff[1])/coeff[0]
+               (k*math.ceil(b/k))-coeff[1])/coeff[0]
                ]
     cap_fit = np.polyval(coeff, volt_fit)
 
