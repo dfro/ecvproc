@@ -213,5 +213,5 @@ def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     cap_fit = np.polyval(coeff, volt_fit)
 
     #doping calculation
-    doping = 1e-12*2/(coeff[0]*q*eps*eps0) #cm^-3
+    doping = -1e-12*2/(coeff[0]*q*eps*eps0) #cm^-3
     return cap_fit, volt_fit, doping
