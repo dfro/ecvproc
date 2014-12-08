@@ -171,7 +171,7 @@ def log_read(log_file, *field_name):
             
     data = np.vstack(np.array(data, dtype=dtype))
     
-    return tuple(data[i] for i in field_name)
+    return tuple(np.reshape(data[i], -1) for i in field_name)
         
 def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     """ Returns linear fit for measured 1/C^2 and calculated Doping level 
