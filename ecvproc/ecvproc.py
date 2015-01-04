@@ -185,7 +185,8 @@ def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     
     Returns
     -------
-    cap_fit: float, 1/C^2 in cm^4/uF^2
+    cap_fit: ndarray, 1/C^2 in cm^4/uF^2
+    volt_fit: ndarray, voltage in V
     doping: float, calculated doping level in cm^-3
     
     """
@@ -210,6 +211,7 @@ def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     volt_fit = [-coeff[1]/coeff[0], 
                (k*math.ceil(b/k)-coeff[1])/coeff[0]
                ]
+    volt_fit = np.array(volt_fit)
     cap_fit = np.polyval(coeff, volt_fit)
 
     #doping calculation
