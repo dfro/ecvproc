@@ -19,4 +19,4 @@ lin_fit      Returns linear fit for measured 1/C^2 and calculated Doping level
 """
 
 
-from ecvproc import cv_read, iv_read, ep_read, log_read, lin_fit
+from ecvproc.ecvproc import cv_read, iv_read, ep_read, log_read, lin_fit

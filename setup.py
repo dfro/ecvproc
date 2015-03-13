@@ -5,6 +5,6 @@ setup(name='ecvproc',
       description='ECVPro output file process',
       author='Dmitry Folov',
       license='MIT',
-      packages=['ecvproc']
+      packages=['ecvproc'],
+      install_requires=['numpy']
       )
-      
