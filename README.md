@@ -1,6 +1,6 @@
 # ECVProc
 
-ECVProc is Python 2.7+ module for processing ECVPro output files.
+ECVProc is Python module for processing ECVPro output files.
 
 ##About
 
