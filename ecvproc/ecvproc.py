@@ -39,14 +39,13 @@ def cv_read(cv_file, model):
     voltage_range = voltage_range.split()
     vstart = float(voltage_range[0])
     vstep = float(voltage_range[1])
-    nneg = float(voltage_range[2])
-    npos = float(voltage_range[3]) - nneg
+    nneg = int(voltage_range[2])
+    npos = int(voltage_range[3]) - nneg
     voltage = np.concatenate((
                                np.linspace(vstart, vstart-vstep*nneg, nneg+1),
                                np.linspace(vstart, vstart+vstep*npos, npos,
                                            endpoint=False)
-                              ),
-                             axis=0)
+                               ), axis=0)
 
     # Y is complex admittance (Gp+Bp*i)
     cnv = dict.fromkeys([0], lambda x: complex(*eval(x)))
@@ -54,7 +53,7 @@ def cv_read(cv_file, model):
                       delimiter=25, skip_header=15)
     # sort array
     array = np.vstack((voltage, Y.real, Y.imag)).T
-    array = array[array[: ,0].argsort(0)]
+    array = array[array[:, 0].argsort(0)]
     voltage = array[:, 0]
     Y.real = array[:, 1]
     Y.imag = array[:, 2]
@@ -90,23 +89,23 @@ def iv_read(iv_file):
     voltage_range = voltage_range.split()
     vstart = float(voltage_range[0])
     vstep = float(voltage_range[1])
-    nneg = float(voltage_range[2])
-    npos = float(voltage_range[3]) - nneg
+    nneg = int(voltage_range[2])
+    npos = int(voltage_range[3]) - nneg
     voltage = np.concatenate((
                               np.linspace(vstart, vstart-vstep*nneg, nneg+1),
                               np.linspace(vstart, vstart+vstep*npos, npos,
                                           endpoint=False)
                               ),
-                             axis = 0)
+                             axis=0)
 
     # read current 
     current = np.genfromtxt(iv_file, skip_header=15)
     
     # sort array
     array = np.vstack((voltage, current)).T
-    array = array[array[:,0].argsort(0)]
-    voltage = array[:,0]
-    current = array[:,1]
+    array = array[array[:, 0].argsort(0)]
+    voltage = array[:, 0]
+    current = array[:, 1]
 
     return current, voltage
 
@@ -153,25 +152,25 @@ def log_read(log_file, *field_name):
                       ('V-etch', '>f4'), ('I-etch', '>f4'), ('V-meas', '>f4'),
                       ('I-meas', '>f4'), ('Dis', '>f4'), ('FBP', '>f4'),
                       ('Wr', '>f4'), ('Wd', '>f4'), ('X', '>f4'), ('N', '>f4'),
-                    ('F1', '>f4'), ('F2', '>f4'), ('Amp', '>f4'), ('dV', '>f4')])
+                     ('F1', '>f4'), ('F2', '>f4'), ('Amp', '>f4'), ('dV', '>f4')])
             
     f = open(log_file, 'r')
-    exclude = ['Spot', 'Value','Freq.', 'Dis.', 'C', 'G','Rs',
+    exclude = ['Spot', 'Value','Freq.', 'Dis.', 'C', 'G', 'Rs',
                'dC/dV', 'FBP', 'Depl.', 'N', 'No.', 'ECVpro',
                'ID:', 'Description:', 'Saved', 'Spot:', 'Etch',
                'Ring:', 'Recipe:', 'Electrolyte:', 'Pot:',
-               'Contact', 'ECVision']
+               'Contact', 'ECVision', 'Surface']
 
     data = []
     
     for line in f:
         if not [s for s in line.split() if s in exclude] \
-        and not line.split()==[]:
-            if not 'F1=' in line:
+        and not line.split() == []:
+            if 'F1=' not in line:
                 data.append(tuple(line.split()) +
                             (mp['F1'], mp['F2'], mp['Amp'], mp['dV']))
             else:
-                mp=dict(s.split('=') for s in line.split(', '))
+                mp = dict(s.split('=') for s in line.split(', '))
             
     data = np.vstack(np.array(data, dtype=dtype))
     
@@ -199,8 +198,8 @@ def lin_fit(capacitance, voltage, vmin=None, vmax=None, eps=15.15):
     if not vmin: vmin = min(voltage)
     if not vmax: vmax = max(voltage)
     volt_in_rage, cap_in_rage = [], []
-    for i in range(voltage.size):
-        if vmin <= voltage[i] <= vmax:
+    for i, volt in enumerate(voltage):
+        if vmin <= volt <= vmax:
             volt_in_rage.append(voltage[i])
             cap_in_rage.append(capacitance[i])
 
