@@ -15,7 +15,7 @@ def cv_read(cv_file, model):
     Parameters
     ----------
     cv_file : str, path to the CV file
-    model : str, 'Cp' or 'Cs' - model for calculation capacitance
+    model : str, 'Cp','Cs' or 'Diss' - model for calculation capacitance
     
     Returns
     -------
@@ -66,6 +66,8 @@ def cv_read(cv_file, model):
         return Cp, voltage
     if model == 'Cs':
         return Cs, voltage
+    if model == 'Diss':
+        return Diss, voltage
 
 
 def iv_read(iv_file):
